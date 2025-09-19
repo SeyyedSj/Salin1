@@ -525,7 +525,7 @@
             // تابع برای بررسی وضعیت API
             async function checkApiStatus() {
                 try {
-                    const response = await fetch(`${API_BASE_URL}/status/`);
+                    const response = await fetch(`${API_BASE_URL}/properties/status/`);
                     
                     if (response.ok) {
                         $('#apiStatus').text('وضعیت API: متصل').removeClass('api-disconnected').addClass('api-connected');
