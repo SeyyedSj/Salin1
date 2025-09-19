@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه ثبت ملک - املاک</title>
+    <title>ثبت ملک جدید - سامانه املاک</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -60,11 +60,6 @@
         .btn-primary:hover {
             background-color: var(--secondary-color);
             border-color: var(--secondary-color);
-        }
-        
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
         }
         
         .feature-badge {
@@ -148,7 +143,7 @@
 <body>
     <div class="container">
         <div class="header text-center">
-            <h1><i class="fas fa-home"></i> سامانه ثبت ملک</h1>
+            <h1><i class="fas fa-home"></i> ثبت ملک جدید</h1>
             <p class="lead">ثبت اطلاعات ملک خود را در کمتر از 5 دقیقه انجام دهید</p>
             <div class="api-status" id="apiStatus">وضعیت API: در حال بررسی...</div>
         </div>
@@ -279,7 +274,8 @@
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                                 <option value="4">4</option>
-                                <option value="5+">5+</option>
+                                <option value="5">5</option>
+                                <option value="6">6+</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -298,7 +294,8 @@
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
-                                <option value="4+">4+</option>
+                                <option value="4">4</option>
+                                <option value="5">5+</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -309,7 +306,7 @@
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                                 <option value="4">4</option>
-                                <option value="5+">5+</option>
+                                <option value="5">5+</option>
                             </select>
                         </div>
                     </div>
@@ -317,11 +314,10 @@
                     <h5 class="section-title">ویژگی‌های شخصی</h5>
                     <div class="mb-3">
                         <div class="d-flex">
+                            <input type="text" class="form-control custom-feature-input" id="customFeature" placeholder="ویژگی جدید (مثال: سونا، جکوزی، استخر و ...)">
                             <button type="button" class="btn btn-primary custom-feature-btn" id="addFeatureBtn">
                                 <i class="fas fa-plus"></i> افزودن
                             </button>
-                            <input type="text" class="form-control custom-feature-input" id="customFeature" placeholder="ویژگی جدید (مثال: سونا، جکوزی، استخر و ...)">
-                            
                         </div>
                     </div>
                     
@@ -389,215 +385,176 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-$(document).ready(function() {
-    // تنظیمات API
-    const API_BASE_URL = 'https://saj88.pythonanywhere.com/api';
-    const API_ENDPOINTS = {
-        properties: '/properties/',
-        status: '/properties/status/'
-    };
-    
-    // بررسی وضعیت API
-    checkApiStatus();
-    
-    // افزودن ویژگی شخصی
-    $('#addFeatureBtn').click(function() {
-        const featureText = $('#customFeature').val().trim();
-        if (featureText) {
-            const featureId = 'feature_' + Date.now();
-            const badge = `
-                <span class="badge bg-success feature-badge" id="${featureId}">
-                    ${featureText}
-                    <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" onclick="$('#${featureId}').remove()"></button>
-                    <input type="hidden" name="customFeatures" value="${featureText}">
-                </span>
-            `;
-            $('#featuresContainer').append(badge);
-            $('#customFeature').val('');
-        }
-    });
-    
-    // پیش‌نمایش تصاویر
-    $('#propertyImages').change(function() {
-        $('#imagePreview').empty();
-        const files = $(this)[0].files;
-        
-        if (files) {
-            $.each(files, function(i, file) {
-                if (i < 10) { // حداکثر 10 تصویر
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#imagePreview').append(`
-                            <div class="col-md-3 mb-3">
-                                <img src="${e.target.result}" class="property-image" alt="پیش‌نمایش تصویر">
-                            </div>
-                        `);
+        $(document).ready(function() {
+            // تنظیمات API
+            const API_BASE_URL = 'https://saj88.pythonanywhere.com/api';
+            
+            // بررسی وضعیت API
+            checkApiStatus();
+            
+            // افزودن ویژگی شخصی
+            $('#addFeatureBtn').click(function() {
+                const featureText = $('#customFeature').val().trim();
+                if (featureText) {
+                    const featureId = 'feature_' + Date.now();
+                    const badge = `
+                        <span class="badge bg-success feature-badge" id="${featureId}">
+                            ${featureText}
+                            <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" onclick="$('#${featureId}').remove()"></button>
+                            <input type="hidden" name="customFeatures" value="${featureText}">
+                        </span>
+                    `;
+                    $('#featuresContainer').append(badge);
+                    $('#customFeature').val('');
+                }
+            });
+            
+            // پیش‌نمایش تصاویر
+            $('#propertyImages').change(function() {
+                $('#imagePreview').empty();
+                const files = $(this)[0].files;
+                
+                if (files) {
+                    $.each(files, function(i, file) {
+                        if (i < 10) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                $('#imagePreview').append(`
+                                    <div class="col-md-3 mb-3">
+                                        <img src="${e.target.result}" class="property-image" alt="پیش‌نمایش تصویر">
+                                    </div>
+                                `);
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            });
+            
+            // اعتبارسنجی و ارسال فرم
+            $('#propertyForm').submit(async function(e) {
+                e.preventDefault();
+                
+                // نمایش اسپینر بارگذاری
+                $('#loadingSpinner').show();
+                $('#submitButton').prop('disabled', true);
+                
+                try {
+                    // جمع‌آوری داده‌های فرم
+                    const formData = collectFormData();
+                    console.log('داده‌های فرم:', formData);
+                    
+                    // ارسال درخواست به API
+                    const responseData = await submitPropertyToApi(formData);
+                    
+                    // نمایش پیام موفقیت
+                    showToast('موفقیت', 'ملک با موفقیت ثبت شد!', 'success');
+                    
+                    // ریست کردن فرم
+                    $('#propertyForm')[0].reset();
+                    $('#featuresContainer').empty();
+                    $('#imagePreview').empty();
+                    
+                } catch (error) {
+                    console.error('Error submitting property:', error);
+                    showToast('خطا', error.message || 'مشکلی در ثبت ملک به وجود آمده است. لطفاً دوباره تلاش کنید.', 'error');
+                } finally {
+                    // مخفی کردن اسپینر بارگذاری
+                    $('#loadingSpinner').hide();
+                    $('#submitButton').prop('disabled', false);
+                }
+            });
+            
+            // تابع برای جمع‌آوری داده‌های فرم
+            function collectFormData() {
+                const customFeatures = [];
+                $('input[name="customFeatures"]').each(function() {
+                    customFeatures.push($(this).val());
+                });
+                
+                return {
+                    contract_type: $('#contractType').val(),
+                    property_type: $('#propertyType').val(),
+                    price: parseInt($('#price').val()) || 0,
+                    area: parseInt($('#area').val()) || 0,
+                    year_built: $('#yearBuilt').val() ? parseInt($('#yearBuilt').val()) : null,
+                    province: $('#province').val(),
+                    city: $('#city').val(),
+                    street: $('#street').val(),
+                    district: $('#district').val(),
+                    plaque: $('#plaque').val(),
+                    unit: $('#unit').val(),
+                    address: $('#address').val(),
+                    latitude: $('#latitude').val() ? parseFloat($('#latitude').val()) : 35.6892,
+                    longitude: $('#longitude').val() ? parseFloat($('#longitude').val()) : 51.3890,
+                    rooms: $('#rooms').val() ? parseInt($('#rooms').val()) : null,
+                    master_room: $('#masterRoom').val(),
+                    floor: $('#floor').val() ? parseInt($('#floor').val()) : null,
+                    total_floors: $('#totalFloors').val() ? parseInt($('#totalFloors').val()) : null,
+                    description: $('#description').val(),
+                    features: customFeatures
+                };
+            }
+            
+            // تابع برای ارسال داده به API
+            async function submitPropertyToApi(data) {
+                console.log('ارسال به API:', `${API_BASE_URL}/properties/create/`);
+                
+                const response = await fetch(`${API_BASE_URL}/properties/create/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                console.log('پاسخ از سرور:', responseData);
+                
+                if (!response.ok) {
+                    throw new Error(responseData.message || 'خطا در ثبت ملک');
+                }
+                
+                if (!responseData.success) {
+                    throw new Error(responseData.message || 'خطا در ثبت ملک');
+                }
+                
+                return responseData;
+            }
+            
+            // تابع برای بررسی وضعیت API
+            async function checkApiStatus() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/status/`);
+                    
+                    if (response.ok) {
+                        $('#apiStatus').text('وضعیت API: متصل').removeClass('api-disconnected').addClass('api-connected');
+                    } else {
+                        $('#apiStatus').text('وضعیت API: قطع').removeClass('api-connected').addClass('api-disconnected');
                     }
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-    });
-    
-    // اعتبارسنجی و ارسال فرم
-    $('#propertyForm').submit(async function(e) {
-        e.preventDefault();
-        
-        // نمایش اسپینر بارگذاری
-        $('#loadingSpinner').show();
-        $('#submitButton').prop('disabled', true);
-        
-        // جمع‌آوری داده‌های فرم
-        const formData = collectFormData();
-        
-        try {
-            // ارسال درخواست به API
-            const response = await submitPropertyToApi(formData);
-            
-            // اگر تصویری انتخاب شده، آپلود تصاویر
-            const imageFiles = $('#propertyImages')[0].files;
-            if (imageFiles.length > 0) {
-                await uploadPropertyImages(response.id, imageFiles);
-            }
-            
-            // نمایش پیام موفقیت
-            showToast('موفقیت', 'ملک با موفقیت ثبت شد!', 'success');
-            
-            // ریست کردن فرم
-            $('#propertyForm')[0].reset();
-            $('#featuresContainer').empty();
-            $('#imagePreview').empty();
-            
-        } catch (error) {
-            console.error('Error submitting property:', error);
-            showToast('خطا', 'مشکلی در ثبت ملک به وجود آمده است. لطفاً دوباره تلاش کنید.', 'error');
-        } finally {
-            // مخفی کردن اسپینر بارگذاری
-            $('#loadingSpinner').hide();
-            $('#submitButton').prop('disabled', false);
-        }
-    });
-    
-    // تابع برای جمع‌آوری داده‌های فرم
-    function collectFormData() {
-        const customFeatures = [];
-        $('input[name="customFeatures"]').each(function() {
-            customFeatures.push({feature: $(this).val()});
-        });
-        
-        return {
-            contract_type: $('#contractType').val(),
-            property_type: $('#propertyType').val(),
-            price: parseInt($('#price').val()) || 0,
-            area: parseInt($('#area').val()) || 0,
-            year_built: $('#yearBuilt').val() ? parseInt($('#yearBuilt').val()) : null,
-            province: $('#province').val(),
-            city: $('#city').val(),
-            street: $('#street').val(),
-            district: $('#district').val(),
-            plaque: $('#plaque').val(),
-            unit: $('#unit').val(),
-            address: $('#address').val(),
-            latitude: parseFloat($('#latitude').val()) || 0,
-            longitude: parseFloat($('#longitude').val()) || 0,
-            rooms: $('#rooms').val() ? parseInt($('#rooms').val()) : null,
-            master_room: $('#masterRoom').val(),
-            floor: $('#floor').val() ? parseInt($('#floor').val()) : null,
-            total_floors: $('#totalFloors').val() ? parseInt($('#totalFloors').val()) : null,
-            description: $('#description').val(),
-            features: customFeatures
-        };
-    }
-    
-    // تابع برای ارسال داده به API
-    async function submitPropertyToApi(data) {
-        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.properties}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include',
-            body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'API response was not ok');
-        }
-        
-        return response.json();
-    }
-    
-    // تابع برای آپلود تصاویر
-    async function uploadPropertyImages(propertyId, imageFiles) {
-        const formData = new FormData();
-        
-        // اضافه کردن تصاویر به FormData
-        for (let i = 0; i < imageFiles.length; i++) {
-            formData.append('images', imageFiles[i]);
-        }
-        
-        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.properties}${propertyId}/upload-images/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to upload images');
-        }
-        
-        return response.json();
-    }
-    
-    // تابع برای بررسی وضعیت API
-    async function checkApiStatus() {
-        try {
-            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.status}`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                $('#apiStatus').text('وضعیت API: متصل').removeClass('api-disconnected').addClass('api-connected');
-            } else {
-                $('#apiStatus').text('وضعیت API: قطع').removeClass('api-connected').addClass('api-disconnected');
-            }
-        } catch (error) {
-            console.error('API connection error:', error);
-            $('#apiStatus').text('وضعیت API: قطع').removeClass('api-connected').addClass('api-disconnected');
-        }
-    }
-    
-    // تابع برای نمایش toast
-    function showToast(title, message, type = 'info') {
-        $('#toastTitle').text(title);
-        $('#toastMessage').text(message);
-        
-        const toast = new bootstrap.Toast($('#toast'));
-        toast.show();
-    }
-    
-    // تابع برای دریافت cookie
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+                } catch (error) {
+                    console.error('API connection error:', error);
+                    $('#apiStatus').text('وضعیت API: قطع').removeClass('api-connected').addClass('api-disconnected');
                 }
             }
-        }
-        return cookieValue;
-    }
-});
+            
+            // تابع برای نمایش toast
+            function showToast(title, message, type = 'info') {
+                $('#toastTitle').text(title);
+                $('#toastMessage').text(message);
+                
+                // تغییر رنگ based on type
+                const toastElement = $('#toast');
+                toastElement.removeClass('bg-success bg-danger bg-info');
+                
+                if (type === 'success') toastElement.addClass('bg-success');
+                else if (type === 'error') toastElement.addClass('bg-danger');
+                else toastElement.addClass('bg-info');
+                
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+        });
     </script>
 </body>
 </html>
